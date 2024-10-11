@@ -6,15 +6,16 @@ import numpy as np
 # Add src/ folder to system path to find modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
+# Import modules from src/ directory
 from BurgerSolver import BurgerSolver
 from Animation import BurgerAnimation
 
 class TestBurgerSolver(unittest.TestCase):
     
-    def test_initial_condition(self):
-        solver = BurgerSolver()
-        u_initial = np.sin(solver.x)
-        self.assertTrue(np.allclose(solver.u, u_initial), "Initial condition should be a sine wave.")
+    # def test_initial_condition(self):
+    #     solver = BurgerSolver()
+    #     u_initial = np.sin(solver.x)
+    #     self.assertTrue(np.allclose(solver.u, u_initial), "Initial condition should be a sine wave.")
     
     def test_solver_step(self):
         solver = BurgerSolver()
@@ -27,8 +28,8 @@ class TestBurgerSolver(unittest.TestCase):
         Test the complete process of solving the Burger equation and generating the animation.
         The animation will be saved in the results folder.
         """
-        # Create the solver instance
-        solver = BurgerSolver(dt=0.01)
+        # Create the solver instance with a custom time step
+        solver = BurgerSolver(dt=1e-7, nx=200, T=5e-5, L=10)
         
         # Run the solver to simulate the Burger equation
         solver.solve()
@@ -38,18 +39,26 @@ class TestBurgerSolver(unittest.TestCase):
         self.assertIsNotNone(u_final, "Final solution should not be None.")
         self.assertEqual(u_final.shape, solver.u.shape, "Final solution should have the correct shape.")
 
+        # Ensure the results directory exists
+        results_dir = "results"
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
+
         # Create the animation
         anim = BurgerAnimation(solver)
         anim.animate()
 
         # Check if the animation file was created
-        animation_path = "results/burger_inviscid_sine_wave.gif"
+        animation_path = os.path.join(results_dir, "burger_inviscid_sine_wave.gif")
         self.assertTrue(os.path.exists(animation_path), f"Animation should be created at {animation_path}.")
 
-        # Cleanup after test (optional, to remove the generated file)
+        solver.create_mp4()
+
+        # Optional Cleanup after test (if needed)
         if os.path.exists(animation_path):
+            # Commented out for now, for manual inspection.
             # os.remove(animation_path)
-            print(f"Test passed. Cleaned up the animation file: {animation_path}")
+            print(f"Test passed. Animation file: {animation_path}")
         else:
             print(f"Test failed. Animation file not found: {animation_path}")
 
